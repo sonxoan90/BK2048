@@ -12,4 +12,14 @@
 
     <string name="lose_title">Hết nước đi</string>
     <string name="lose_message">Bạn bị học lại rồi. Điểm của bạn: %1$d</string>
+
+    <string name="menu_continue">Chơi tiếp</string>
+    <string name="menu_collection">Bộ sưu tập</string>
+    <string name="menu_high_score">Điểm cao nhất: %1$d</string>
+
+    <string name="collection_title">Bộ sưu tập</string>
+    <!-- Dấu \ để aapt không hiểu ? ở đầu chuỗi là tham chiếu thuộc tính -->
+    <string name="locked_label">\?</string>
+    <string name="locked_title">\?\?\?</string>
+    <string name="locked_description">Chưa mở khóa</string>
 </resources>

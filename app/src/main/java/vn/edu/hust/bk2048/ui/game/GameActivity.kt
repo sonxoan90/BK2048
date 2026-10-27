@@ -19,7 +19,9 @@ import vn.edu.hust.bk2048.R
 import vn.edu.hust.bk2048.databinding.ActivityGameBinding
 import vn.edu.hust.bk2048.databinding.ItemTileBinding
 import vn.edu.hust.bk2048.data.GameStorage
+import vn.edu.hust.bk2048.data.SavedGame
 import vn.edu.hust.bk2048.domain.Board
+import vn.edu.hust.bk2048.domain.DEMO_BOARD
 import vn.edu.hust.bk2048.domain.maxTile
 import vn.edu.hust.bk2048.domain.Direction
 import vn.edu.hust.bk2048.domain.GameState
@@ -62,12 +64,28 @@ class GameActivity : AppCompatActivity() {
 
         // Nạp ván đã lưu (nếu có) vào ViewModel trước khi bắt đầu observe
         storage = GameStorage(this)
-        viewModel.start(storage.loadGame(), storage.getHighScore())
+        viewModel.start(chooseStartGame(savedInstanceState), storage.getHighScore())
 
         createTiles()
         setupInput()
         observeViewModel()
         binding.btnNewGame.setOnClickListener { viewModel.newGame() }
+    }
+
+    // Chọn ván bắt đầu theo nút đã bấm ở Menu (Intent extra). null nghĩa là ván mới hoàn toàn.
+    private fun chooseStartGame(savedInstanceState: Bundle?): SavedGame? {
+        // Activity được tạo lại (xoay màn hình, hoặc app bị tắt rồi mở lại): luôn lấy ván đã lưu,
+        // không áp dụng lại "Ván mới" hay "Demo" một lần nữa
+        if (savedInstanceState != null) return storage.loadGame()
+        // [KT Ch1.5] when chọn theo chế độ
+        return when (intent.getStringExtra(EXTRA_MODE)) {
+            MODE_NEW -> {
+                storage.clearGame()
+                null
+            }
+            MODE_DEMO -> SavedGame(DEMO_BOARD, score = 5000, hasWon = false)
+            else -> storage.loadGame() // MODE_CONTINUE
+        }
     }
 
     override fun onStart() {
@@ -223,7 +241,13 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private companion object {
-        const val TAG = "GameActivity"
+    companion object {
+        private const val TAG = "GameActivity"
+
+        // Menu gửi chế độ chơi qua Intent bằng key này
+        const val EXTRA_MODE = "mode"
+        const val MODE_NEW = "new"
+        const val MODE_CONTINUE = "continue"
+        const val MODE_DEMO = "demo"
     }
 }

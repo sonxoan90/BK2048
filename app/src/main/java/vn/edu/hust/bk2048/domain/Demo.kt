@@ -4,6 +4,17 @@ import kotlin.random.Random
 
 // Chạy thử logic trên console (không cần Android): chạy hàm main() trong Android Studio
 
+// Bàn cờ dựng sẵn cho chế độ demo (nhấn giữ tiêu đề ở Menu).
+// Vuốt TRÁI rồi vuốt LÊN là có ô 2048: hàng đầu gộp thành 1024, cột đầu có hai ô 1024.
+val DEMO_BOARD = Board(
+    listOf(
+        listOf(512, 512, 256, 128),
+        listOf(1024, 0, 0, 0),
+        listOf(64, 32, 16, 8),
+        listOf(4, 2, 0, 0)
+    )
+)
+
 private fun printGame(game: Game) {
     println("Điểm: ${game.score}  Trạng thái: ${game.state::class.simpleName}")
     game.board.cells.forEach { row ->
