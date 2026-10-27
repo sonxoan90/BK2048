@@ -18,7 +18,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import vn.edu.hust.bk2048.R
 import vn.edu.hust.bk2048.databinding.ActivityGameBinding
 import vn.edu.hust.bk2048.databinding.ItemTileBinding
+import vn.edu.hust.bk2048.data.GameStorage
 import vn.edu.hust.bk2048.domain.Board
+import vn.edu.hust.bk2048.domain.maxTile
 import vn.edu.hust.bk2048.domain.Direction
 import vn.edu.hust.bk2048.domain.GameState
 import vn.edu.hust.bk2048.domain.TileSets
@@ -31,6 +33,9 @@ class GameActivity : AppCompatActivity() {
 
     // [KT Ch8] by viewModels(): lấy GameViewModel, xoay màn hình vẫn là cùng một đối tượng
     private val viewModel: GameViewModel by viewModels()
+
+    // SharedPreferences lưu ván và điểm cao qua các lần mở app
+    private lateinit var storage: GameStorage
 
     // 16 ô trên lưới (theo thứ tự hàng trước, cột sau)
     private val tiles = mutableListOf<ItemTileBinding>()
@@ -55,6 +60,10 @@ class GameActivity : AppCompatActivity() {
             insets
         }
 
+        // Nạp ván đã lưu (nếu có) vào ViewModel trước khi bắt đầu observe
+        storage = GameStorage(this)
+        viewModel.start(storage.loadGame(), storage.getHighScore())
+
         createTiles()
         setupInput()
         observeViewModel()
@@ -73,7 +82,21 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause") // GĐ 3 sẽ lưu ván ở đây
+        Log.d(TAG, "onPause")
+        saveProgress() // [KT Ch7] onPause là lúc an toàn để lưu: app có thể bị tắt ngay sau đó
+    }
+
+    private fun saveProgress() {
+        val board = viewModel.board.value ?: return
+        val score = viewModel.score.value ?: 0
+        storage.saveHighScore(viewModel.bestScore.value ?: 0)
+        storage.saveMaxTile(board.maxTile())
+        // Ván đã thua thì không lưu để lần sau mở ra là ván mới
+        if (viewModel.state.value is GameState.Lost) {
+            storage.clearGame()
+        } else {
+            storage.saveGame(board, score, viewModel.hasWon)
+        }
     }
 
     override fun onStop() {
