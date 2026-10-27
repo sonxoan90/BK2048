@@ -198,9 +198,15 @@ class GameActivity : AppCompatActivity() {
 
     // [KT Ch8] observe: LiveData đổi thì Activity tự vẽ lại
     private fun observeViewModel() {
-        viewModel.board.observe(this) { drawBoard(it) }
-        viewModel.score.observe(this) { binding.tvScore.text = it.toString() }
-        viewModel.bestScore.observe(this) { binding.tvBest.text = it.toString() }
+        viewModel.board.observe(this) {
+            drawBoard(it)
+            storage.saveMaxTile(it.maxTile()) // ô mới đạt được mở khóa Bộ sưu tập ngay
+        }
+        viewModel.score.observe(this) { binding.tvScore.text = getString(R.string.number_format, it) }
+        viewModel.bestScore.observe(this) {
+            binding.tvBest.text = getString(R.string.number_format, it)
+            storage.saveHighScore(it) // lưu ngay khi phá kỷ lục, không đợi onPause (app có thể bị tắt đột ngột)
+        }
         viewModel.state.observe(this) { showStateDialog(it) }
         // Nút Hoàn tác chỉ bấm được khi còn bước để quay lại
         viewModel.canUndo.observe(this) { binding.btnUndo.isEnabled = it }
@@ -225,7 +231,7 @@ class GameActivity : AppCompatActivity() {
                     label.length == 3 -> 22f
                     else -> 18f
                 }
-                tile.tvValue.text = value.toString()
+                tile.tvValue.text = getString(R.string.number_format, value)
             }
             val textColor = TileStyle.textColor(this, value)
             tile.tvLabel.setTextColor(textColor)

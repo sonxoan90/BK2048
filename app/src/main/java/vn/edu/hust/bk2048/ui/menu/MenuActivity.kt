@@ -8,7 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import vn.edu.hust.bk2048.R
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
+import vn.edu.hust.bk2048.data.AppDatabase
+import vn.edu.hust.bk2048.data.GameRecord
 import vn.edu.hust.bk2048.data.GameStorage
+import vn.edu.hust.bk2048.data.SavedGame
+import vn.edu.hust.bk2048.domain.maxTile
 import vn.edu.hust.bk2048.databinding.ActivityMenuBinding
 import vn.edu.hust.bk2048.ui.collection.CollectionActivity
 import vn.edu.hust.bk2048.ui.game.GameActivity
@@ -34,7 +41,7 @@ class MenuActivity : AppCompatActivity() {
 
         // [KT Ch4] xử lý sự kiện bấm nút bằng lambda; Intent mở màn hình khác
         binding.btnContinue.setOnClickListener { startGame(GameActivity.MODE_CONTINUE) }
-        binding.btnNewGame.setOnClickListener { startGame(GameActivity.MODE_NEW) }
+        binding.btnNewGame.setOnClickListener { onNewGameClicked() }
         binding.btnCollection.setOnClickListener {
             startActivity(Intent(this, CollectionActivity::class.java))
         }
@@ -56,6 +63,37 @@ class MenuActivity : AppCompatActivity() {
         super.onResume()
         binding.tvHighScore.text = getString(R.string.menu_high_score, storage.getHighScore())
         binding.btnContinue.visibility = if (storage.hasSavedGame()) View.VISIBLE else View.GONE
+    }
+
+    // Đang có ván lưu thì hỏi trước khi bỏ, và ghi ván đó vào lịch sử (nếu đã có điểm)
+    private fun onNewGameClicked() {
+        val saved = storage.loadGame()
+        if (saved == null) {
+            startGame(GameActivity.MODE_NEW)
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.new_game_confirm_title)
+            .setMessage(R.string.new_game_confirm_message)
+            .setPositiveButton(R.string.new_game) { _, _ -> recordThenStartNewGame(saved) }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    // [KT Ch9] ghi bản ghi xong (suspend) rồi mới mở ván mới
+    private fun recordThenStartNewGame(saved: SavedGame) {
+        lifecycleScope.launch {
+            if (saved.score > 0) {
+                val record = GameRecord(
+                    score = saved.score,
+                    maxTile = saved.board.maxTile(),
+                    won = saved.hasWon,
+                    playedAt = System.currentTimeMillis()
+                )
+                AppDatabase.get(this@MenuActivity).gameRecordDao().insert(record)
+            }
+            startGame(GameActivity.MODE_NEW)
+        }
     }
 
     private fun startGame(mode: String) {

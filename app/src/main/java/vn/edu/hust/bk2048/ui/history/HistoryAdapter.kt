@@ -38,6 +38,8 @@ class HistoryAdapter(private val items: List<GameRecord>) :
 
         view.tvScore.text = context.getString(R.string.history_score, record.score)
         val result = context.getString(if (record.won) R.string.history_won else R.string.history_not_won)
-        view.tvDetail.text = "${dateFormat.format(Date(record.playedAt))} · $result"
+        view.tvDetail.text = context.getString(
+            R.string.history_detail, dateFormat.format(Date(record.playedAt)), result
+        )
     }
 }

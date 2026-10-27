@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-
     <!-- Màu ô: chuyển dần từ đỏ (F) qua vàng (C) đến xanh lá (A+), HB và KS màu gold -->
     <color name="tile_empty">#33808080</color>
     <color name="tile_2">#E53935</color>

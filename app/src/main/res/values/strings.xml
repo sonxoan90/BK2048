@@ -15,6 +15,12 @@
     <string name="lose_message">Bạn bị học lại rồi. Điểm của bạn: %1$d</string>
 
     <string name="menu_continue">Chơi tiếp</string>
+    <string name="new_game_confirm_title">Bỏ ván đang chơi?</string>
+    <string name="new_game_confirm_message">Ván hiện tại sẽ được lưu vào Lịch sử rồi bắt đầu ván mới.</string>
+
+    <!-- Định dạng số theo ngôn ngữ của máy (tránh nối chuỗi trong code) -->
+    <string name="number_format">%1$d</string>
+    <string name="history_detail">%1$s · %2$s</string>
     <string name="menu_collection">Bộ sưu tập</string>
     <string name="menu_high_score">Điểm cao nhất: %1$d</string>
 
