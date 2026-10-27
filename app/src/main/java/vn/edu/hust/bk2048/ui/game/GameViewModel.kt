@@ -28,6 +28,10 @@ class GameViewModel : ViewModel() {
     private val _state = MutableLiveData<GameState>(game.state)
     val state: LiveData<GameState> = _state
 
+    // Dành cho animation: ô vừa sinh ra và các ô vừa gộp ở lượt đi gần nhất
+    val lastSpawn: Pair<Int, Int>? get() = game.lastSpawn
+    val lastMerged: List<Pair<Int, Int>> get() = game.lastMerged
+
     // Có đang ở trạng thái thắng không (để lưu cùng ván)
     val hasWon: Boolean get() = game.hasWon
 

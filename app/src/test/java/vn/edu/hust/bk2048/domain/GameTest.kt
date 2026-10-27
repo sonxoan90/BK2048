@@ -67,6 +67,25 @@ class GameTest {
     }
 
     @Test
+    fun lastSpawn_laODuocSinhThem() {
+        val game = newGame()
+        game.load(
+            Board(
+                listOf(
+                    listOf(0, 0, 0, 2),
+                    listOf(0, 0, 0, 0),
+                    listOf(0, 0, 0, 0),
+                    listOf(0, 0, 0, 0)
+                )
+            )
+        )
+        game.move(Direction.LEFT)
+        val spawn = game.lastSpawn!!
+        assertTrue(game.board.cells[spawn.first][spawn.second] != 0)
+        assertTrue(spawn != Pair(0, 0)) // (0,0) là ô cũ vừa trượt tới, không phải ô mới
+    }
+
+    @Test
     fun nhanRaThang_khiCoO2048() {
         val game = newGame()
         game.load(

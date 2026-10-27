@@ -16,6 +16,12 @@ class Game(
     var state: GameState = GameState.Playing
         private set
 
+    // Dành cho animation: ô vừa sinh ra và các ô vừa gộp trong lượt đi gần nhất
+    var lastSpawn: Pair<Int, Int>? = null
+        private set
+    var lastMerged: List<Pair<Int, Int>> = emptyList()
+        private set
+
     // Đã báo thắng rồi thì không báo lại (chỉ báo 1 lần mỗi ván)
     var hasWon: Boolean = false
         private set
@@ -43,8 +49,14 @@ class Game(
         state = GameState.Playing
         hasWon = false
         previous = null
+        clearAnimationInfo()
         board = spawnTile(board)
         board = spawnTile(board)
+    }
+
+    private fun clearAnimationInfo() {
+        lastSpawn = null
+        lastMerged = emptyList()
     }
 
     // Khôi phục ván đã lưu (hoặc dựng bàn cờ có sẵn cho chế độ demo)
@@ -53,6 +65,7 @@ class Game(
         this.score = score
         this.hasWon = hasWon
         previous = null
+        clearAnimationInfo()
         state = computeState()
     }
 
@@ -64,6 +77,8 @@ class Game(
 
         previous = Snapshot(board, score, state, hasWon)
         board = spawnTile(result.board)
+        lastSpawn = findSpawned(result.board, board)
+        lastMerged = result.mergedCells
         score += result.score
         state = computeState()
         return true
@@ -82,8 +97,13 @@ class Game(
         state = snapshot.state
         hasWon = snapshot.hasWon
         previous = null
+        clearAnimationInfo()
         return true
     }
+
+    // Ô sinh thêm là ô trống trước khi sinh và có giá trị sau khi sinh
+    private fun findSpawned(before: Board, after: Board): Pair<Int, Int>? =
+        before.emptyCells().firstOrNull { (r, c) -> after.cells[r][c] != 0 }
 
     private fun computeState(): GameState {
         if (!hasWon && board.maxTile() >= WIN_TILE) {

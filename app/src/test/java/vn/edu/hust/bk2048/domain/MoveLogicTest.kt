@@ -118,6 +118,21 @@ class MoveLogicTest {
         assertEquals(expected, r.board)
     }
 
+    // Vị trí ô vừa gộp (dùng cho animation) phải đúng ở cả 4 hướng
+    @Test
+    fun oVuaGop_dungViTriCa4Huong() {
+        assertEquals(setOf(0 to 0, 2 to 0, 3 to 0), move(sample, Direction.LEFT).mergedCells.toSet())
+        assertEquals(setOf(0 to 3, 2 to 3, 3 to 3), move(sample, Direction.RIGHT).mergedCells.toSet())
+        assertEquals(setOf(0 to 1), move(sample, Direction.UP).mergedCells.toSet())
+        assertEquals(setOf(3 to 1), move(sample, Direction.DOWN).mergedCells.toSet())
+    }
+
+    @Test
+    fun mergeRow_ghiViTriO_gop() {
+        assertEquals(listOf(0, 1), mergeRow(listOf(2, 2, 2, 2)).mergedAt)
+        assertEquals(listOf(0), mergeRow(listOf(2, 2, 4, 0)).mergedAt)
+    }
+
     @Test
     fun banCoKhongDoi_moved_false() {
         val full = Board(

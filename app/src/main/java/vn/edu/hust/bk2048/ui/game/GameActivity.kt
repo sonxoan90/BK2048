@@ -44,6 +44,9 @@ class GameActivity : AppCompatActivity() {
     private lateinit var gestureDetector: GestureDetector
     private var dialog: AlertDialog? = null
 
+    // Bàn cờ đã vẽ lần trước, để biết có phải vừa đi một nước hay không
+    private var previousBoard: Board? = null
+
     // [KT Ch7] ghi Log các callback vòng đời để xem thứ tự gọi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -198,6 +201,10 @@ class GameActivity : AppCompatActivity() {
     private fun drawBoard(board: Board) {
         // [KT Ch2.4] forEachIndexed: duyệt 16 ô kèm chỉ số
         tiles.forEachIndexed { index, tile ->
+            // Dừng animation cũ (nếu còn) để ô luôn về cỡ bình thường trước khi vẽ lại
+            tile.root.animate().cancel()
+            tile.root.scaleX = 1f
+            tile.root.scaleY = 1f
             val value = board.cells[index / 4][index % 4]
             if (value == 0) {
                 tile.tvLabel.text = ""
@@ -216,6 +223,29 @@ class GameActivity : AppCompatActivity() {
             tile.tvLabel.setTextColor(textColor)
             tile.tvValue.setTextColor(textColor)
             tile.root.background = TileStyle.background(this, value)
+        }
+
+        // Chỉ chạy animation khi bàn cờ đổi sau một lượt đi (không chạy lúc mở màn hình hay xoay)
+        if (previousBoard != null && previousBoard != board) animateMove()
+        previousBoard = board
+    }
+
+    // Ô vừa gộp phóng to rồi thu về; ô mới sinh ra phóng từ nhỏ lên
+    private fun animateMove() {
+        viewModel.lastMerged.forEach { (row, col) ->
+            tiles[row * 4 + col].root.apply {
+                scaleX = MERGE_SCALE
+                scaleY = MERGE_SCALE
+                // [KT Ch5] ViewPropertyAnimator: animate().scaleX(...) chạy hiệu ứng trong một thời gian
+                animate().scaleX(1f).scaleY(1f).setDuration(ANIM_MS).start()
+            }
+        }
+        viewModel.lastSpawn?.let { (row, col) ->
+            tiles[row * 4 + col].root.apply {
+                scaleX = 0f
+                scaleY = 0f
+                animate().scaleX(1f).scaleY(1f).setDuration(ANIM_MS).start()
+            }
         }
     }
 
@@ -243,6 +273,8 @@ class GameActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "GameActivity"
+        private const val ANIM_MS = 120L
+        private const val MERGE_SCALE = 1.15f
 
         // Menu gửi chế độ chơi qua Intent bằng key này
         const val EXTRA_MODE = "mode"
