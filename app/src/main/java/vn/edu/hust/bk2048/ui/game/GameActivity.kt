@@ -69,6 +69,10 @@ class GameActivity : AppCompatActivity() {
         storage = GameStorage(this)
         viewModel.start(chooseStartGame(savedInstanceState), storage.getHighScore())
 
+        // Sau khi chạm màn hình, Android "nuốt" phím mũi tên đầu tiên để rời chế độ cảm ứng,
+        // trừ khi đã có một view giữ focus. Cho tiêu đề giữ focus để phím đầu tiên không bị mất.
+        binding.tvTitle.requestFocus()
+
         createTiles()
         setupInput()
         observeViewModel()
@@ -259,21 +263,30 @@ class GameActivity : AppCompatActivity() {
         // [KT Ch3.4] when trên sealed class: đủ 3 nhánh nên không cần else
         when (state) {
             GameState.Playing -> Unit
-            GameState.Won -> dialog = MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.win_title)
-                .setMessage(R.string.win_message)
-                .setCancelable(false)
-                .setPositiveButton(R.string.keep_playing) { _, _ -> viewModel.continueAfterWin() }
-                .setNegativeButton(R.string.new_game) { _, _ -> viewModel.newGame() }
-                .show()
-            GameState.Lost -> dialog = MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.lose_title)
-                .setMessage(getString(R.string.lose_message, viewModel.score.value ?: 0))
-                .setCancelable(false)
-                .setPositiveButton(R.string.new_game) { _, _ -> viewModel.newGame() }
-                .setNegativeButton(R.string.undo) { _, _ -> viewModel.undo() } // thua rồi vẫn quay lại được 1 bước
-                .show()
+            GameState.Won -> dialog = showDialog(
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.win_title)
+                    .setMessage(R.string.win_message)
+                    .setPositiveButton(R.string.keep_playing) { _, _ -> viewModel.continueAfterWin() }
+                    .setNegativeButton(R.string.new_game) { _, _ -> viewModel.newGame() }
+            )
+            GameState.Lost -> dialog = showDialog(
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.lose_title)
+                    .setMessage(getString(R.string.lose_message, viewModel.score.value ?: 0))
+                    .setPositiveButton(R.string.new_game) { _, _ -> viewModel.newGame() }
+                    .setNegativeButton(R.string.undo) { _, _ -> viewModel.undo() } // thua rồi vẫn quay lại được 1 bước
+            )
         }
+    }
+
+    // Bấm Back khi đang có hộp thoại thì thoát về Menu (ván vẫn được lưu ở onPause).
+    // Chạm ra ngoài hộp thoại thì không đóng, để không lỡ tay.
+    private fun showDialog(builder: MaterialAlertDialogBuilder): AlertDialog {
+        val alert = builder.setOnCancelListener { finish() }.create()
+        alert.setCanceledOnTouchOutside(false)
+        alert.show()
+        return alert
     }
 
     companion object {

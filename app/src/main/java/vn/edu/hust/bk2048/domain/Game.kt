@@ -86,7 +86,9 @@ class Game(
 
     // Sau khi thắng, người chơi chọn "Chơi tiếp"
     fun continueAfterWin() {
-        if (state is GameState.Won) state = GameState.Playing
+        // hasWon đã là true nên computeState() không báo thắng lại; nó chỉ cho biết Playing hay Lost
+        // (có thể bàn cờ đã đầy và hết nước đi ngay lúc chạm 2048)
+        if (state is GameState.Won) state = computeState()
     }
 
     // Quay lại 1 bước; trả về false nếu không có bước nào để quay lại

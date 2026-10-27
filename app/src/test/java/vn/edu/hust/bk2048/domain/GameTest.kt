@@ -124,6 +124,42 @@ class GameTest {
     }
 
     @Test
+    fun thangRoiChoiTiep_banCoDayKhongConNuocDi_laThua() {
+        val game = newGame()
+        // Bàn cờ đầy, có ô 2048 và không còn cặp kề nhau bằng nhau
+        game.load(
+            Board(
+                listOf(
+                    listOf(2048, 4, 2, 4),
+                    listOf(4, 2, 4, 2),
+                    listOf(2, 4, 2, 4),
+                    listOf(4, 2, 4, 2)
+                )
+            )
+        )
+        assertEquals(GameState.Won, game.state)
+        game.continueAfterWin()
+        assertEquals(GameState.Lost, game.state) // không được kẹt ở Playing
+    }
+
+    @Test
+    fun thangRoiChoiTiep_conNuocDi_laPlaying() {
+        val game = newGame()
+        game.load(
+            Board(
+                listOf(
+                    listOf(2048, 0, 0, 0),
+                    listOf(0, 0, 0, 0),
+                    listOf(0, 0, 0, 0),
+                    listOf(0, 0, 0, 0)
+                )
+            )
+        )
+        game.continueAfterWin()
+        assertEquals(GameState.Playing, game.state)
+    }
+
+    @Test
     fun banCoDayKhongConCapKe_thua() {
         val game = newGame()
         game.load(deadBoard)
