@@ -5,6 +5,7 @@
     <string name="score_label">ĐIỂM</string>
     <string name="best_label">CAO NHẤT</string>
     <string name="new_game">Ván mới</string>
+    <string name="undo">Hoàn tác</string>
 
     <string name="win_title">Chúc mừng, bạn tốt nghiệp!</string>
     <string name="win_message">Bạn đã nhận tấm bằng Kỹ sư Bách khoa.</string>
@@ -19,6 +20,24 @@
 
     <string name="collection_title">Bộ sưu tập</string>
     <!-- Dấu \ để aapt không hiểu ? ở đầu chuỗi là tham chiếu thuộc tính -->
+    <string name="menu_history">Lịch sử</string>
+    <string name="menu_settings">Cài đặt</string>
+
+    <string name="history_title">Lịch sử ván chơi</string>
+    <string name="history_empty">Chưa có ván nào. Chơi xong một ván là sẽ hiện ở đây.</string>
+    <string name="history_score">Điểm: %1$d</string>
+    <string name="history_won">Đã tốt nghiệp</string>
+    <string name="history_not_won">Chưa tới đích</string>
+
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_animation">Hiệu ứng động</string>
+    <string name="settings_clear">Xóa dữ liệu</string>
+    <string name="settings_clear_title">Xóa toàn bộ dữ liệu?</string>
+    <string name="settings_clear_message">Ván đang chơi, điểm cao, bộ sưu tập và lịch sử sẽ bị xóa. Không thể khôi phục.</string>
+    <string name="settings_clear_confirm">Xóa</string>
+    <string name="settings_cleared">Đã xóa dữ liệu</string>
+    <string name="cancel">Hủy</string>
+
     <string name="locked_label">\?</string>
     <string name="locked_title">\?\?\?</string>
     <string name="locked_description">Chưa mở khóa</string>

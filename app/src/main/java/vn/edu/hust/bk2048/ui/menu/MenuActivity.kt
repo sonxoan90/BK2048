@@ -12,6 +12,8 @@ import vn.edu.hust.bk2048.data.GameStorage
 import vn.edu.hust.bk2048.databinding.ActivityMenuBinding
 import vn.edu.hust.bk2048.ui.collection.CollectionActivity
 import vn.edu.hust.bk2048.ui.game.GameActivity
+import vn.edu.hust.bk2048.ui.history.HistoryActivity
+import vn.edu.hust.bk2048.ui.settings.SettingsActivity
 
 class MenuActivity : AppCompatActivity() {
 
@@ -35,6 +37,12 @@ class MenuActivity : AppCompatActivity() {
         binding.btnNewGame.setOnClickListener { startGame(GameActivity.MODE_NEW) }
         binding.btnCollection.setOnClickListener {
             startActivity(Intent(this, CollectionActivity::class.java))
+        }
+        binding.btnHistory.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
+        binding.btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
         // Nhấn giữ tiêu đề: mở ván demo gần thắng. Trả về true = đã xử lý sự kiện
         binding.tvTitle.setOnLongClickListener {

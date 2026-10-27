@@ -48,8 +48,24 @@ class GameStorage(context: Context) {
         if (value > getMaxTile()) prefs.edit().putInt(KEY_MAX_TILE, value).apply()
     }
 
+    // Bật/tắt hiệu ứng động (mặc định là bật)
+    fun isAnimationEnabled(): Boolean = prefs.getBoolean(KEY_ANIMATION, true)
+
+    fun setAnimationEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_ANIMATION, enabled).apply()
+    }
+
+    // Xóa ván đang lưu, điểm cao, ô lớn nhất. Giữ lại cài đặt hiệu ứng của người dùng.
+    fun clearAllData() {
+        prefs.edit()
+            .remove(KEY_BOARD).remove(KEY_SCORE).remove(KEY_HAS_WON)
+            .remove(KEY_HIGH_SCORE).remove(KEY_MAX_TILE)
+            .apply()
+    }
+
     private companion object {
         const val PREFS_NAME = "bk2048_prefs"
+        const val KEY_ANIMATION = "animation_enabled"
         const val KEY_BOARD = "board"
         const val KEY_SCORE = "score"
         const val KEY_HAS_WON = "has_won"

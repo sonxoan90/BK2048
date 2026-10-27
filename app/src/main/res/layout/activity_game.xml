@@ -90,6 +90,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardScore" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUndo"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/undo"
+        app:layout_constraintBaseline_toBaselineOf="@id/btnNewGame"
+        app:layout_constraintStart_toEndOf="@id/btnNewGame" />
+
     <!-- Lưới 4x4: các ô được thêm bằng code trong GameActivity -->
     <GridLayout
         android:id="@+id/grid"

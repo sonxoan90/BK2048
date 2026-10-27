@@ -73,6 +73,7 @@ class GameActivity : AppCompatActivity() {
         setupInput()
         observeViewModel()
         binding.btnNewGame.setOnClickListener { viewModel.newGame() }
+        binding.btnUndo.setOnClickListener { viewModel.undo() }
     }
 
     // Chọn ván bắt đầu theo nút đã bấm ở Menu (Intent extra). null nghĩa là ván mới hoàn toàn.
@@ -110,6 +111,7 @@ class GameActivity : AppCompatActivity() {
     private fun saveProgress() {
         val board = viewModel.board.value ?: return
         val score = viewModel.score.value ?: 0
+        viewModel.recordIfLost()
         storage.saveHighScore(viewModel.bestScore.value ?: 0)
         storage.saveMaxTile(board.maxTile())
         // Ván đã thua thì không lưu để lần sau mở ra là ván mới
@@ -196,6 +198,8 @@ class GameActivity : AppCompatActivity() {
         viewModel.score.observe(this) { binding.tvScore.text = it.toString() }
         viewModel.bestScore.observe(this) { binding.tvBest.text = it.toString() }
         viewModel.state.observe(this) { showStateDialog(it) }
+        // Nút Hoàn tác chỉ bấm được khi còn bước để quay lại
+        viewModel.canUndo.observe(this) { binding.btnUndo.isEnabled = it }
     }
 
     private fun drawBoard(board: Board) {
@@ -226,7 +230,7 @@ class GameActivity : AppCompatActivity() {
         }
 
         // Chỉ chạy animation khi bàn cờ đổi sau một lượt đi (không chạy lúc mở màn hình hay xoay)
-        if (previousBoard != null && previousBoard != board) animateMove()
+        if (previousBoard != null && previousBoard != board && storage.isAnimationEnabled()) animateMove()
         previousBoard = board
     }
 
@@ -267,6 +271,7 @@ class GameActivity : AppCompatActivity() {
                 .setMessage(getString(R.string.lose_message, viewModel.score.value ?: 0))
                 .setCancelable(false)
                 .setPositiveButton(R.string.new_game) { _, _ -> viewModel.newGame() }
+                .setNegativeButton(R.string.undo) { _, _ -> viewModel.undo() } // thua rồi vẫn quay lại được 1 bước
                 .show()
         }
     }
