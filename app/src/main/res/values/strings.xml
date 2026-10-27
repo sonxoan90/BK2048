@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">2048 BK</string>
+    <string name="slogan">Vuốt là qua môn, gộp là ra trường.</string>
+
+    <string name="score_label">ĐIỂM</string>
+    <string name="best_label">CAO NHẤT</string>
+    <string name="new_game">Ván mới</string>
+
+    <string name="win_title">Chúc mừng, bạn tốt nghiệp!</string>
+    <string name="win_message">Bạn đã nhận tấm bằng Kỹ sư Bách khoa.</string>
+    <string name="keep_playing">Chơi tiếp</string>
+
+    <string name="lose_title">Hết nước đi</string>
+    <string name="lose_message">Bạn bị học lại rồi. Điểm của bạn: %1$d</string>
 </resources>

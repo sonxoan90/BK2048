@@ -2,4 +2,22 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Màu ô: chuyển dần từ đỏ (F) qua vàng (C) đến xanh lá (A+), HB và KS màu gold -->
+    <color name="tile_empty">#33808080</color>
+    <color name="tile_2">#E53935</color>
+    <color name="tile_4">#F4511E</color>
+    <color name="tile_8">#FB8C00</color>
+    <color name="tile_16">#FDD835</color>
+    <color name="tile_32">#CDDC39</color>
+    <color name="tile_64">#9CCC65</color>
+    <color name="tile_128">#66BB6A</color>
+    <color name="tile_256">#43A047</color>
+    <color name="tile_512">#2E7D32</color>
+    <color name="tile_1024">#FFC107</color>
+    <color name="tile_2048">#FFB300</color>
+    <color name="tile_super">#37474F</color>
+
+    <color name="tile_text_light">#FFFFFFFF</color>
+    <color name="tile_text_dark">#3E2723</color>
 </resources>
