@@ -43,7 +43,7 @@ Vuốt/phím → GameActivity → viewModel.move(dir) → game.move(dir) [domain
 | 5 | **Xoay màn hình** (nút Rotate của emulator) | Ván không mất nhờ ViewModel (Ch8); Activity bị tạo lại, xem Logcat tag `GameActivity` | TV2 |
 | 6 | Back → Menu: có nút **Chơi tiếp** | Ván tự lưu ở `onPause` (SharedPreferences) | TV3 |
 | 7 | **Nhấn giữ tiêu đề "2048 BK"** → ván demo gần thắng (5000 điểm) | Chế độ demo để khỏi chơi lâu | TV3 |
-| 8 | **Vuốt trái** (←) rồi **vuốt lên** (↑) → xuất hiện **KS** → hộp thoại thắng | Thuật toán gộp: `[512,512,…]` → `1024`, hai ô 1024 cùng cột → `2048`. Mỗi ô chỉ gộp 1 lần/lượt | TV1 |
+| 8 | **Vuốt trái** (←) rồi **vuốt lên** (↑) → xuất hiện **KS** → hộp thoại thắng | Thuật toán gộp: `[512,512,…]` → `1024`, hai ô 1024 cùng cột → `2048`. Mỗi ô chỉ gộp 1 lần/lượt. Tiếng gộp ở đây cao nhất, rồi đến tiếng thắng | TV1 |
 | 9 | Bấm **Chơi tiếp**, rồi Back về Menu | Chỉ báo thắng một lần mỗi ván (`hasWon`) | TV1 |
 | 10 | Mở lại **Bộ sưu tập**: 11 mức đã mở, hiện tên và mô tả | Mở khóa theo ô lớn nhất từng đạt | TV3 |
 | 11 | **Lịch sử**: hiện các ván đã chơi | Room: `@Entity`, `@Dao`, `suspend`, coroutine | TV3 |
