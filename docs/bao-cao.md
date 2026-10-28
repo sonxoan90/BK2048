@@ -10,9 +10,9 @@ Báo cáo trước giáo viên: **03/11/2026**. Tài liệu này gồm: (1) tóm
 
 - Game giải đố 2048 trên Android, ô hiển thị **điểm chữ thang Bách khoa**: F → D → D+ → C → C+ → B → B+ → A → A+ → HB (học bổng) → **KS (Kỹ sư)**. Đạt ô KS là thắng.
 - Kotlin + XML Views, nhiều Activity, ViewModel/LiveData, SharedPreferences, RecyclerView, Room.
-- **Toàn bộ luật chơi nằm trong `domain/`** (Kotlin thuần, không `import android.*`), có 27 unit test. Giao diện chỉ gọi và vẽ lại.
-- Quy mô: 27 file Kotlin, 56 chỗ đánh dấu kiến thức `// [KT ChX.Y]` (tìm bằng `grep -r "\[KT" app/src`).
-- Tính năng: chơi 2048, vuốt và phím mũi tên, Hoàn tác 1 bước, tự lưu ván, điểm cao, Bộ sưu tập (khóa/mở), Lịch sử ván (Room), Cài đặt (tắt hiệu ứng, xóa dữ liệu), chế độ demo.
+- **Toàn bộ luật chơi nằm trong `domain/`** (Kotlin thuần, không `import android.*`), được kiểm thử bằng bộ 31 unit test. Giao diện chỉ gọi và vẽ lại.
+- Quy mô: 29 file Kotlin, 60 chỗ đánh dấu kiến thức `// [KT ChX.Y]` (tìm bằng `grep -r "\[KT" app/src`).
+- Tính năng: chơi 2048, vuốt và phím mũi tên, Hoàn tác 1 bước, tự lưu ván, điểm cao, Bộ sưu tập (khóa/mở), Lịch sử ván (Room), Âm thanh (SoundPool, cao độ tăng theo ô gộp), Cài đặt (tắt hiệu ứng, tắt âm thanh, xóa dữ liệu), chế độ demo.
 
 Luồng một lượt vuốt (ai cũng phải nói được):
 
@@ -30,6 +30,7 @@ Vuốt/phím → GameActivity → viewModel.move(dir) → game.move(dir) [domain
 2. Vào **Cài đặt → Xóa dữ liệu → Xóa** để bắt đầu từ trạng thái sạch (Bộ sưu tập sẽ toàn dấu `?`, tạo tương phản đẹp khi mở khóa).
 3. Quay sẵn **một video màn hình** toàn bộ kịch bản (thanh công cụ emulator → quay màn hình) để dự phòng nếu máy lỗi.
 4. Đóng ứng dụng khác, bật bàn phím máy tính để dùng **phím mũi tên** điều khiển emulator.
+5. **Bật âm thanh:** chạy emulator **không** có tùy chọn `-no-audio`, tăng âm lượng máy tính và thử một nước đi để chắc chắn nghe được tiếng.
 
 ### Các bước (người trình bày gợi ý theo phân công mục 10 của CLAUDE.md)
 
@@ -37,7 +38,7 @@ Vuốt/phím → GameActivity → viewModel.move(dir) → game.move(dir) [domain
 |---|---|---|---|
 | 1 | Mở app, thấy Menu (tên, slogan, điểm cao 0) | Giới thiệu game và slogan | Cả nhóm / TV3 |
 | 2 | **Bộ sưu tập**: toàn ô khóa `?` / `???` | RecyclerView, mức chưa đạt bị khóa | TV3 |
-| 3 | Back → **Ván mới**, vuốt vài nước (F gộp thành D, D+…) | Mỗi ô một nhãn điểm chữ, số nhỏ ở góc; ô gộp phóng nhẹ | TV2 |
+| 3 | Back → **Ván mới**, vuốt vài nước (F gộp thành D, D+…) | Mỗi ô một nhãn điểm chữ, số nhỏ ở góc; ô gộp phóng nhẹ. **Có tiếng trượt và tiếng gộp, ô gộp càng lớn tiếng càng cao** | TV2 |
 | 4 | Bấm **Hoàn tác** | Chỉ quay lại 1 bước (snapshot trong `Game`) | TV1 / TV2 |
 | 5 | **Xoay màn hình** (nút Rotate của emulator) | Ván không mất nhờ ViewModel (Ch8); Activity bị tạo lại, xem Logcat tag `GameActivity` | TV2 |
 | 6 | Back → Menu: có nút **Chơi tiếp** | Ván tự lưu ở `onPause` (SharedPreferences) | TV3 |
@@ -46,9 +47,9 @@ Vuốt/phím → GameActivity → viewModel.move(dir) → game.move(dir) [domain
 | 9 | Bấm **Chơi tiếp**, rồi Back về Menu | Chỉ báo thắng một lần mỗi ván (`hasWon`) | TV1 |
 | 10 | Mở lại **Bộ sưu tập**: 11 mức đã mở, hiện tên và mô tả | Mở khóa theo ô lớn nhất từng đạt | TV3 |
 | 11 | **Lịch sử**: hiện các ván đã chơi | Room: `@Entity`, `@Dao`, `suspend`, coroutine | TV3 |
-| 12 | **Cài đặt**: tắt/bật Hiệu ứng động; **Xóa dữ liệu** (có xác nhận) | Hộp thoại xác nhận cho thao tác không hoàn lại | TV3 |
+| 12 | **Cài đặt**: tắt/bật Hiệu ứng động và **Âm thanh** (vào lại ván để thấy hết tiếng); **Xóa dữ liệu** (có xác nhận) | Công tắc lưu bằng SharedPreferences; hộp thoại xác nhận cho thao tác không hoàn lại | TV3 |
 | 13 | (Tùy thời gian) Tắt hẳn app bằng nút Recent, mở lại, **Chơi tiếp** | Dữ liệu còn sau khi tắt app | TV3 |
-| 14 | Mở `Demo.kt` trong Android Studio, chạy `main()` + chạy bộ test (27 test) | Logic chạy độc lập, không cần Android | TV1 |
+| 14 | Mở `Demo.kt` trong Android Studio, chạy `main()` + chạy bộ test (31 test) | Logic chạy độc lập, không cần Android | TV1 |
 
 ### Mẹo và dự phòng
 - Muốn thấy hộp thoại **thua** nhanh: ván mới rồi bấm phím mũi tên liên tục. Back từ hộp thoại sẽ về Menu.
@@ -60,7 +61,7 @@ Vuốt/phím → GameActivity → viewModel.move(dir) → game.move(dir) [domain
 
 ## 3. Câu hỏi thầy có thể hỏi
 
-Mỗi thành viên đọc file `docs/giai-thich/` tương ứng và tự chạy thử. Câu trả lời ngắn gọn nằm trong các file đó; dưới đây là bản câu hỏi tập trung.
+Mỗi thành viên đọc file `docs/giai-thich/` tương ứng (Thành viên 2 thêm `08-am-thanh.md`) và tự chạy thử. Câu trả lời ngắn gọn nằm trong các file đó; dưới đây là bản câu hỏi tập trung.
 
 ### Thành viên 1 – Logic game (`domain/`, đọc `01-domain.md`)
 1. Giải thích `mergeRow`. Vì sao `[2,2,2,2]` ra `[4,4,0,0]` mà không ra `[8,0,0,0]`? *(nhảy `i += 2` sau khi gộp.)*
@@ -84,7 +85,8 @@ Mỗi thành viên đọc file `docs/giai-thich/` tương ứng và tự chạy 
 7. View Binding là gì, khác `findViewById` thế nào?
 8. Animation làm bằng gì? Làm sao biết ô nào vừa gộp, ô nào vừa sinh? *(`ViewPropertyAnimator`; `domain` trả `mergedCells` và `lastSpawn`, giao diện chỉ vẽ.)*
 9. Vì sao `GameViewModel` kế thừa `AndroidViewModel`? *(Cần `Application` để mở Room.)*
-10. **Câu khó:** em xử lý phím mũi tên ra sao và gặp vấn đề gì? *(`onKeyDown`; sau khi chạm màn hình, Android nuốt phím điều hướng đầu tiên để rời touch mode; sửa bằng cho tiêu đề giữ focus.)*
+10. Âm thanh làm thế nào? Vì sao dùng `SoundPool` thay vì `MediaPlayer`, và vì sao phải `release()` ở `onDestroy`? *(SoundPool nạp trước âm ngắn, phát tức thì và phát chồng nhau; giữ bộ nhớ và luồng âm thanh nên phải giải phóng khi Activity bị hủy, nhất là lúc xoay màn hình. Cao độ tiếng gộp tăng nhờ tham số `rate`, xem `08-am-thanh.md`.)*
+11. **Câu khó:** em xử lý phím mũi tên ra sao và gặp vấn đề gì? *(`onKeyDown`; sau khi chạm màn hình, Android nuốt phím điều hướng đầu tiên để rời touch mode; sửa bằng cho tiêu đề giữ focus.)*
 
 ### Thành viên 3 – Lưu trữ và các màn phụ (`GameStorage`, Menu, Bộ sưu tập, Lịch sử, Cài đặt, đọc `03`, `04`, `06`)
 1. SharedPreferences lưu được kiểu nào? Bàn cờ lưu thế nào? *(Chuỗi `"2,0,4,…"` bằng `joinToString` / `split`, đọc lại bằng `Board.fromText`, trả `null` nếu hỏng.)*
@@ -101,7 +103,7 @@ Mỗi thành viên đọc file `docs/giai-thich/` tương ứng và tự chạy 
 1. Vì sao dùng Views mà không dùng Jetpack Compose, Navigation, Fragment? *(Theo giáo trình và stack nhóm đã chốt; nhiều Activity + Intent; bám Chương 3–8.)*
 2. Nhóm dùng AI thế nào? Các bạn hiểu code ra sao? *(Trả lời trung thực: AI viết code, từng thành viên đọc file giải thích, tự chạy thử và phải giải thích được `mergeRow` cùng luồng một lượt vuốt.)*
 3. Em chỉ một chỗ minh họa Kotlin Chương 2 trong code. *(Mở bằng `grep -r "\[KT Ch2" app/src`.)*
-4. Hạn chế và hướng phát triển? *(Undo chỉ 1 bước; chưa có âm thanh; chưa có ảnh chibi; chưa kiểm thử trên nhiều cỡ màn hình; có thể thêm bảng xếp hạng.)*
+4. Hạn chế và hướng phát triển? *(Undo chỉ 1 bước; chưa có nhạc nền (mới có hiệu ứng âm thanh ngắn); chưa có ảnh chibi; chưa kiểm thử trên nhiều cỡ màn hình; có thể thêm bảng xếp hạng.)*
 5. App chạy được trên máy thật không? *(minSdk 26; hiện nhóm chủ yếu chạy emulator, nên nói rõ.)*
 
 ---
