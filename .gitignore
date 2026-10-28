@@ -18,3 +18,4 @@ local.properties
 
 # Thư mục cấu hình/khóa tạm của công cụ Claude Code
 .claude/
+CLAUDE.md
