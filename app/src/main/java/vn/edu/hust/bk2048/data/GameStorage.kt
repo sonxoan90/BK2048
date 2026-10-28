@@ -55,7 +55,14 @@ class GameStorage(context: Context) {
         prefs.edit().putBoolean(KEY_ANIMATION, enabled).apply()
     }
 
-    // Xóa ván đang lưu, điểm cao, ô lớn nhất. Giữ lại cài đặt hiệu ứng của người dùng.
+    // Bật/tắt âm thanh (mặc định là bật)
+    fun isSoundEnabled(): Boolean = prefs.getBoolean(KEY_SOUND, true)
+
+    fun setSoundEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SOUND, enabled).apply()
+    }
+
+    // Xóa ván đang lưu, điểm cao, ô lớn nhất. Giữ lại cài đặt (hiệu ứng, âm thanh) của người dùng.
     fun clearAllData() {
         prefs.edit()
             .remove(KEY_BOARD).remove(KEY_SCORE).remove(KEY_HAS_WON)
@@ -66,6 +73,7 @@ class GameStorage(context: Context) {
     private companion object {
         const val PREFS_NAME = "bk2048_prefs"
         const val KEY_ANIMATION = "animation_enabled"
+        const val KEY_SOUND = "sound_enabled"
         const val KEY_BOARD = "board"
         const val KEY_SCORE = "score"
         const val KEY_HAS_WON = "has_won"

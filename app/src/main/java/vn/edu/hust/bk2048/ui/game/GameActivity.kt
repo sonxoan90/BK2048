@@ -26,6 +26,7 @@ import vn.edu.hust.bk2048.domain.maxTile
 import vn.edu.hust.bk2048.domain.Direction
 import vn.edu.hust.bk2048.domain.GameState
 import vn.edu.hust.bk2048.domain.TileSets
+import vn.edu.hust.bk2048.ui.SoundManager
 import vn.edu.hust.bk2048.ui.TileStyle
 
 class GameActivity : AppCompatActivity() {
@@ -47,6 +48,12 @@ class GameActivity : AppCompatActivity() {
     // Bàn cờ đã vẽ lần trước, để biết có phải vừa đi một nước hay không
     private var previousBoard: Board? = null
 
+    // Trạng thái đã nhận lần trước, để chỉ phát tiếng thắng/thua đúng lúc trạng thái đổi
+    // (không phát lại khi Activity được tạo lại lúc xoay màn hình)
+    private var previousState: GameState? = null
+
+    private lateinit var sound: SoundManager
+
     // [KT Ch7] ghi Log các callback vòng đời để xem thứ tự gọi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +74,8 @@ class GameActivity : AppCompatActivity() {
 
         // Nạp ván đã lưu (nếu có) vào ViewModel trước khi bắt đầu observe
         storage = GameStorage(this)
+        // [KT Ch7] SoundPool giữ bộ nhớ và luồng âm thanh: tạo ở onCreate, giải phóng ở onDestroy
+        sound = SoundManager(this) { storage.isSoundEnabled() }
         viewModel.start(chooseStartGame(savedInstanceState), storage.getHighScore())
 
         // Sau khi chạm màn hình, Android "nuốt" phím mũi tên đầu tiên để rời chế độ cảm ứng,
@@ -135,6 +144,8 @@ class GameActivity : AppCompatActivity() {
         super.onDestroy()
         Log.d(TAG, "onDestroy")
         dialog?.dismiss() // tránh rò rỉ cửa sổ khi xoay màn hình
+        // [KT Ch7] không release thì SoundPool cũ vẫn giữ bộ nhớ sau khi Activity bị hủy (xoay màn hình, thoát)
+        sound.release()
     }
 
     // Tạo sẵn 16 ô, chỉ đổi nội dung khi vẽ lại
@@ -207,7 +218,19 @@ class GameActivity : AppCompatActivity() {
             binding.tvBest.text = getString(R.string.number_format, it)
             storage.saveHighScore(it) // lưu ngay khi phá kỷ lục, không đợi onPause (app có thể bị tắt đột ngột)
         }
-        viewModel.state.observe(this) { showStateDialog(it) }
+        viewModel.state.observe(this) {
+            // Tiếng thắng/thua chỉ phát khi trạng thái ĐỔI trong lúc đang chơi
+            // (previousState == null là lần nhận đầu tiên: mở màn hình hoặc xoay, không phát)
+            if (previousState != null && previousState != it) {
+                when (it) {
+                    GameState.Won -> sound.playWin()
+                    GameState.Lost -> sound.playLose()
+                    GameState.Playing -> Unit
+                }
+            }
+            previousState = it
+            showStateDialog(it)
+        }
         // Nút Hoàn tác chỉ bấm được khi còn bước để quay lại
         viewModel.canUndo.observe(this) { binding.btnUndo.isEnabled = it }
     }
@@ -239,9 +262,24 @@ class GameActivity : AppCompatActivity() {
             tile.root.background = TileStyle.background(this, value)
         }
 
-        // Chỉ chạy animation khi bàn cờ đổi sau một lượt đi (không chạy lúc mở màn hình hay xoay)
-        if (previousBoard != null && previousBoard != board && storage.isAnimationEnabled()) animateMove()
+        // Chỉ chạy animation và phát tiếng khi bàn cờ đổi sau một lượt đi (không chạy lúc mở màn hình hay xoay)
+        val changed = previousBoard != null && previousBoard != board
+        if (changed && storage.isAnimationEnabled()) animateMove()
+        if (changed) playMoveSounds(board)
         previousBoard = board
+    }
+
+    // Tiếng trượt cho mọi lượt đi; có ô gộp thì thêm tiếng gộp, cao độ theo ô gộp lớn nhất
+    private fun playMoveSounds(board: Board) {
+        // Ván mới và Hoàn tác cũng làm bàn cờ đổi nhưng không sinh ô mới (lastSpawn == null)
+        // nên không phát tiếng; một lượt đi thật luôn sinh ô mới.
+        if (viewModel.lastSpawn == null) return
+        sound.playSlide()
+        val merged = viewModel.lastMerged
+        if (merged.isNotEmpty()) {
+            // [KT Ch2.4] maxOf với lambda: lấy giá trị lớn nhất trong các ô vừa gộp
+            sound.playMerge(merged.maxOf { (row, col) -> board.cells[row][col] })
+        }
     }
 
     // Ô vừa gộp phóng to rồi thu về; ô mới sinh ra phóng từ nhỏ lên

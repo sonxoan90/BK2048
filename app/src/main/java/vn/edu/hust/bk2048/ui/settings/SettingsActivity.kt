@@ -36,6 +36,12 @@ class SettingsActivity : AppCompatActivity() {
             storage.setAnimationEnabled(checked)
         }
 
+        // Công tắc âm thanh: cùng cách với công tắc hiệu ứng
+        binding.switchSound.isChecked = storage.isSoundEnabled()
+        binding.switchSound.setOnCheckedChangeListener { _, checked ->
+            storage.setSoundEnabled(checked)
+        }
+
         binding.btnClearData.setOnClickListener { confirmClear() }
     }
 

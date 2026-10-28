@@ -37,6 +37,7 @@
 
     <string name="settings_title">Cài đặt</string>
     <string name="settings_animation">Hiệu ứng động</string>
+    <string name="settings_sound">Âm thanh</string>
     <string name="settings_clear">Xóa dữ liệu</string>
     <string name="settings_clear_title">Xóa toàn bộ dữ liệu?</string>
     <string name="settings_clear_message">Ván đang chơi, điểm cao, bộ sưu tập và lịch sử sẽ bị xóa. Không thể khôi phục.</string>

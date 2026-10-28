@@ -24,6 +24,15 @@
         android:text="@string/settings_animation"
         android:textSize="18sp" />
 
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchSound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:text="@string/settings_sound"
+        android:textSize="18sp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnClearData"
         style="@style/Widget.Material3.Button.OutlinedButton"
