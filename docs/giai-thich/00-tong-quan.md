@@ -1,6 +1,6 @@
 # Tổng quan 2048 BK – Tài liệu ôn tập cho cả nhóm
 
-> Đọc file này **trước tiên**, sau đó mới đọc các file `01` → `07` cho phần mình phụ trách.
+> Đọc file này **trước tiên**, sau đó mới đọc các file `01` → `08` cho phần mình phụ trách.
 > Mọi đoạn code trích dưới đây lấy nguyên từ project.
 
 ---
@@ -9,7 +9,7 @@
 
 **2048 BK – Đường Tới Kỹ Sư** là game giải đố 2048. Mỗi ô hiển thị một **điểm chữ thang Bách khoa**: F → D → D+ → C → C+ → B → B+ → A → A+ → HB (Học bổng) → **KS (Kỹ sư)**. Người chơi vuốt để gộp hai ô giống nhau thành ô cao hơn. Đạt ô **KS** (giá trị 2048) là thắng.
 
-Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, tự lưu ván, điểm cao, Bộ sưu tập 11 mức điểm, Lịch sử ván chơi, Cài đặt, chế độ demo.
+Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, tự lưu ván, điểm cao, Bộ sưu tập 11 mức điểm, Lịch sử ván chơi, **Âm thanh** (tiếng trượt, gộp có cao độ tăng theo ô gộp, thắng, thua), Cài đặt (tắt hiệu ứng, tắt âm thanh, xóa dữ liệu), chế độ demo.
 
 ---
 
@@ -18,7 +18,7 @@ Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, t
 ```
 ┌──────────── ui/  (giao diện – phụ thuộc Android) ────────────┐
 │ MenuActivity  GameActivity  CollectionActivity               │
-│ HistoryActivity  SettingsActivity                            │
+│ HistoryActivity  SettingsActivity  SoundManager              │
 │ GameViewModel (LiveData)  SwipeListener  TileStyle  Adapter  │
 └──────────────┬──────────────────────────────┬────────────────┘
                │ gọi luật chơi                 │ lưu / đọc
@@ -31,7 +31,7 @@ Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, t
 ```
 
 **Nguyên tắc vàng:** toàn bộ luật chơi nằm trong `domain/`, **không có dòng `import android.*` nào**. Nhờ vậy:
-- Test được bằng JUnit (27 test) và chạy thử bằng `main()` trong `Demo.kt`, không cần emulator.
+- Test được bằng JUnit (bộ 31 test, phần lớn kiểm thử `domain/`) và chạy thử bằng `main()` trong `Demo.kt`, không cần emulator.
 - Giao diện không chứa luật chơi: Activity chỉ nhận thao tác và vẽ lại.
 
 ### Bản đồ file
@@ -50,11 +50,13 @@ Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, t
 | `ui/game/GameViewModel.kt` | cầu nối Activity ↔ Game qua LiveData; ghi lịch sử | TV2 |
 | `ui/game/SwipeListener.kt` | đổi cử chỉ vuốt thành `Direction` | TV2 |
 | `ui/TileStyle.kt` | giá trị ô → màu nền, màu chữ | TV2 |
+| `ui/SoundManager.kt` | phát tiếng trượt/gộp/thắng/thua bằng `SoundPool`; `rateFor` tính cao độ; `release()` ở `onDestroy` | TV2 |
+| `res/raw/sfx_*.ogg`, `tools/generate_sounds.py` | 4 file âm thanh và script Python sinh ra chúng | TV2 |
 | `data/GameStorage.kt` | SharedPreferences: ván, điểm cao, ô lớn nhất, cài đặt | TV3 |
 | `data/GameRecord.kt`, `GameRecordDao.kt`, `AppDatabase.kt` | Room: bảng lịch sử ván | TV3 |
 | `ui/menu/MenuActivity.kt` | màn khởi động, mở GameActivity bằng Intent | TV3 |
 | `ui/collection/…`, `ui/history/…` | RecyclerView: Bộ sưu tập, Lịch sử | TV3 |
-| `ui/settings/SettingsActivity.kt` | bật/tắt hiệu ứng, xóa dữ liệu | TV3 |
+| `ui/settings/SettingsActivity.kt` | bật/tắt hiệu ứng, bật/tắt âm thanh, xóa dữ liệu | TV3 |
 
 ---
 
@@ -64,7 +66,7 @@ Tính năng: chơi bằng vuốt hoặc phím mũi tên, Hoàn tác 1 bước, t
 |---|---|
 | **Đầu vào** | Vuốt 4 hướng / phím mũi tên; nút Ván mới, Hoàn tác, Chơi tiếp; chọn mục ở Menu; dữ liệu đã lưu |
 | **Xử lý** | `domain/`: trượt, gộp, cộng điểm, sinh ô, xét thắng/thua. `data/`: lưu và đọc |
-| **Đầu ra** | Lưới 4×4 (nhãn + màu + số nhỏ ở góc), điểm, hiệu ứng, hộp thoại thắng/thua, Bộ sưu tập, Lịch sử, dữ liệu lưu bền |
+| **Đầu ra** | Lưới 4×4 (nhãn + màu + số nhỏ ở góc), điểm, hiệu ứng, âm thanh, hộp thoại thắng/thua, Bộ sưu tập, Lịch sử, dữ liệu lưu bền |
 
 ---
 
@@ -79,7 +81,7 @@ Vuốt / phím ←
       2. moved == false → dừng, KHÔNG sinh ô
       3. lưu Snapshot (cho Undo) → sinh 1 ô mới → cộng điểm → computeState()
  → ViewModel.refresh(): đặt giá trị mới cho các LiveData
- → GameActivity đang observe → drawBoard() vẽ lại 16 ô → animateMove()
+ → GameActivity đang observe → drawBoard() vẽ lại 16 ô → animateMove() + playMoveSounds()
 ```
 
 ### 4.1 `mergeRow` – trái tim của game (`MoveLogic.kt`)
@@ -199,13 +201,19 @@ viewModel.board.observe(this) { drawBoard(it) }    // LiveData đổi → tự v
 
 | Callback | Việc làm trong app |
 |---|---|
-| `onCreate` | tạo binding, `viewModel.start(...)` nạp ván theo chế độ, tạo 16 ô, gắn vuốt, `observe` |
+| `onCreate` | tạo binding, tạo `SoundManager`, `viewModel.start(...)` nạp ván theo chế độ, tạo 16 ô, gắn vuốt, `observe` |
 | `onPause` | **`saveProgress()`**: lưu ván, điểm cao, ô lớn nhất; ván thua thì xóa bản lưu và ghi lịch sử |
-| `onDestroy` | đóng hộp thoại đang mở để tránh rò rỉ cửa sổ |
+| `onDestroy` | đóng hộp thoại đang mở để tránh rò rỉ cửa sổ; **`sound.release()`** giải phóng `SoundPool` |
 
 Tại sao lưu ở `onPause` mà không phải `onDestroy`? Vì sau `onPause` hệ thống có thể tắt app bất kỳ lúc nào, và `onDestroy` không được đảm bảo sẽ chạy.
 
 **Animation** chỉ chạy khi `previousBoard != board`, nên mở màn hình hay xoay màn hình không có hiệu ứng. Ô gộp phóng 1.15 lần rồi thu về; ô mới phóng từ 0 lên; mỗi hiệu ứng 120 ms.
+
+**Âm thanh** (`ui/SoundManager.kt`, `SoundPool`): chỉ phát cùng lúc với animation, tức là khi bàn cờ đổi sau một lượt đi thật (`lastSpawn != null`, nên Ván mới và Hoàn tác im lặng).
+- Mọi lượt vuốt có tiếng **trượt**; có ô gộp thì thêm tiếng **gộp** với cao độ `rate = 1 + 0,1 × (log2(ô gộp lớn nhất) − 2)`, kẹp trong khoảng 0,5 đến 2,0 (ô 1024 → 1,8; ô 2048 → 1,9).
+- Tiếng **thắng/thua** phát khi `state` đổi so với `previousState`, nên xoay màn hình lúc đang hiện hộp thoại không kêu lại.
+- Công tắc **Âm thanh** trong Cài đặt: `SoundManager` nhận hàm `isEnabled: () -> Boolean` và hỏi lại mỗi lần phát.
+- `SoundPool` giữ bộ nhớ nên phải tạo ở `onCreate` và `release()` ở `onDestroy`. Chi tiết xem `08-am-thanh.md`.
 
 ---
 
@@ -218,7 +226,7 @@ Tại sao lưu ở `onPause` mà không phải `onDestroy`? Vì sau `onPause` h�
 | `board` | String `"2,0,4,…"` | bàn cờ: `flatten().joinToString(",")`, đọc lại bằng `split` + `toIntOrNull` + `chunked(4)` |
 | `score`, `has_won` | Int, Boolean | điểm ván đang chơi, đã thắng chưa |
 | `high_score`, `max_tile` | Int | chỉ ghi khi **lớn hơn** giá trị cũ |
-| `animation_enabled` | Boolean | cài đặt hiệu ứng (giữ lại khi xóa dữ liệu) |
+| `animation_enabled`, `sound_enabled` | Boolean | cài đặt hiệu ứng và âm thanh, mặc định bật (giữ lại khi xóa dữ liệu) |
 
 Chuỗi hỏng thì `Board.fromText` trả về `null` → app bỏ qua và mở ván mới, không crash.
 
@@ -250,7 +258,7 @@ Menu cập nhật điểm cao và nút *Chơi tiếp* ở **`onResume`**, vì kh
 
 ## 9. Bản đồ kiến thức giáo trình trong code
 
-Tìm toàn bộ chỗ đánh dấu (56 chỗ): `grep -r "\[KT" app/src`
+Tìm toàn bộ chỗ đánh dấu (60 chỗ): `grep -r "\[KT" app/src`
 
 | Chương | Kiến thức | Ví dụ trong code |
 |---|---|---|
@@ -268,7 +276,7 @@ Tìm toàn bộ chỗ đánh dấu (56 chỗ): `grep -r "\[KT" app/src`
 | 3.5 | Package | `domain` / `data` / `ui` |
 | 4 | Activity, Intent, resources, View Binding | `MenuActivity`, `strings.xml`, `ActivityGameBinding` |
 | 5 | ConstraintLayout, RecyclerView, GridLayout | `TileAdapter`, lưới 4×4 |
-| 7 | Vòng đời | `Log.d` ở 6 callback; lưu ở `onPause` |
+| 7 | Vòng đời | `Log.d` ở 6 callback; lưu ở `onPause`; tạo `SoundPool` ở `onCreate`, `release()` ở `onDestroy` |
 | 8 | ViewModel, LiveData | `GameViewModel`, `observe` |
 | 9 | Room, Coroutines | `@Entity`, `@Dao`, `suspend`, `viewModelScope` |
 
@@ -287,6 +295,8 @@ Tìm toàn bộ chỗ đánh dấu (56 chỗ): `grep -r "\[KT" app/src`
 | Thua rồi bấm Hoàn tác | Quay lại nước trước khi thua (Undo 1 bước) |
 | Chuỗi lưu bị hỏng | `fromText` trả `null` → mở ván mới, không crash |
 | Bấm Back khi có hộp thoại | Đóng hộp thoại và về Menu; ván vẫn được lưu |
+| Ván mới, Hoàn tác, xoay màn hình | Không phát tiếng (chỉ phát khi có lượt đi thật) |
+| Tắt công tắc Âm thanh | Mọi lệnh phát bị bỏ qua ngay; cài đặt còn sau khi tắt app và sau Xóa dữ liệu |
 
 ---
 
@@ -312,12 +322,14 @@ Tìm toàn bộ chỗ đánh dấu (56 chỗ): `grep -r "\[KT" app/src`
 | 16 | Menu gửi chế độ chơi sang màn chơi thế nào? | `Intent.putExtra("mode", …)`, bên kia `getStringExtra` |
 | 17 | RecyclerView có 3 hàm bắt buộc nào? | `onCreateViewHolder`, `onBindViewHolder`, `getItemCount` |
 | 18 | App viết bằng Java hay Kotlin? | 100% Kotlin; thư mục `java/` chỉ là tên mặc định của Android |
+| 19 | Vì sao dùng `SoundPool` và vì sao phải `release()` ở `onDestroy`? | Nạp trước âm ngắn, phát tức thì, phát chồng nhau; nó giữ bộ nhớ và luồng âm thanh nên Activity bị hủy (xoay màn hình, thoát) mà không giải phóng sẽ rò rỉ |
+| 20 | Cao độ tiếng gộp thay đổi bằng cách nào? | Tham số `rate` của `SoundPool.play`: tốc độ phát nhanh hơn thì âm cao hơn; `rate` tăng 0,1 mỗi lần ô gộp gấp đôi |
 
 ---
 
 ## 12. Lộ trình ôn (khoảng 3 giờ mỗi người)
 
-1. **Cả nhóm (45 phút):** đọc file này, chạy `Demo.kt` (mũi tên xanh cạnh `fun main()`), chạy 27 test (chuột phải `app/src/test` → Run Tests).
+1. **Cả nhóm (45 phút):** đọc file này, chạy `Demo.kt` (mũi tên xanh cạnh `fun main()`), chạy bộ 31 test (chuột phải `app/src/test` → Run Tests).
 2. **Cả nhóm (30 phút):** mở `MoveLogic.kt`, mỗi người tự chạy tay `mergeRow` với `[2,2,2,2]` và `[0,4,4,4]` ra giấy, rồi giải thích cho hai bạn còn lại.
-3. **Theo phần (1,5 giờ):** TV1 đọc `01`; TV2 đọc `02`, `05`; TV3 đọc `03`, `04`, `06`. Ai cũng đọc `07`.
+3. **Theo phần (1,5 giờ):** TV1 đọc `01`; TV2 đọc `02`, `05`, `08`; TV3 đọc `03`, `04`, `06`. Ai cũng đọc `07`.
 4. **Cả nhóm (15 phút):** hỏi chéo bằng bảng tự kiểm tra ở mục 11.
